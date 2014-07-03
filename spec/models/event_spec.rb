@@ -8,6 +8,6 @@ describe Event, "Validations" do
 end
 
 describe Event, "Associations" do
-	#it { should have_many(:attendances) }
+	it { should have_many(:attendances) }
 	it { should belong_to(:owner).class_name('User') }
 end
