@@ -14,8 +14,9 @@ describe 'GET /v1/events/:id' do
 				'name' => event.name,
 				'started_at' => event.started_at.as_json,
 				'owner' => {
-					'device_token' => event.owner.device_token
-				}
+					'device_token' => event.owner.device_token,
+				},
+				'attendancees' => event.users.count
 			}
 		)
 	end

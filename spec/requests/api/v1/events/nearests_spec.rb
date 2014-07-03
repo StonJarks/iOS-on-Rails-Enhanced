@@ -22,7 +22,8 @@ describe 'GET /v1/events/nearests?lat=&lon=&radius=' do
 				'lon' => near_event.lon,
 				'name' => near_event.name,
 				'owner' => { 'device_token' => near_event.owner.device_token},
-				'started_at' => near_event.started_at.as_json
+				'started_at' => near_event.started_at.as_json,
+				'attendancees' => near_event.users.count
 				},
 			{
 				'address' => farther_event.address,
@@ -32,7 +33,8 @@ describe 'GET /v1/events/nearests?lat=&lon=&radius=' do
 				'lon' => farther_event.lon,
 				'name' => farther_event.name,
 				'owner' => { 'device_token' => farther_event.owner.device_token},
-				'started_at' => farther_event.started_at.as_json
+				'started_at' => farther_event.started_at.as_json,
+				'attendancees' => farther_event.users.count
 			}
 		])
 	end

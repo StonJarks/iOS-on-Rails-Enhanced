@@ -10,4 +10,6 @@ json.cache! event do
 	json.owner do
 		json.device_token event.owner.device_token
 	end
+
+	json.attendancees event.users.count
 end
