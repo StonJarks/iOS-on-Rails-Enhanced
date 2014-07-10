@@ -61,5 +61,20 @@ describe "POST /v1/events/:id/photo" do
 		#expect(photo.image.filename).to eq "image.jpg"
 		#expect(photo.image).to eq({ "url" => photo.image.url})
 	end
-# 	it "returns an error message when invalid"
+ 	it "returns an error message when invalid" do
+ 		event = create(:event)
+
+ 		expect{ post "v1/events/#{event.id}/photos",
+				{}.to_json,
+				{'Content-Type' => 'application/json', 'Accept' => 'application/json'}
+			}.to_not change(Photo, :count)
+
+		expect(response_json).to eq({
+			'message' => 'Validation Failed',
+			'errors' => [
+				"Image can't be blank"
+				]
+			})
+		expect(response.code.to_i).to eq 422
+	end
 end
