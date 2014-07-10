@@ -10,4 +10,5 @@ end
 describe Event, "Associations" do
 	it { should have_many(:attendances) }
 	it { should belong_to(:owner).class_name('User') }
+	it { should have_many(:photos) }
 end

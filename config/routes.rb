@@ -5,7 +5,9 @@ Rails.application.routes.draw do
         resources :nearests, only: [:index]
       end
 
-      resources :events, only: [:create, :show, :update]
+      resources :events, only: [:create, :show, :update] do
+        resources :photos, only: [:create, :index, :show]
+      end
       resources :users, only: [:create]
       resources :attendances, only: [:create]
     end
