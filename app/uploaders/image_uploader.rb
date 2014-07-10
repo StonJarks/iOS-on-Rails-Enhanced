@@ -4,7 +4,7 @@ class ImageUploader < CarrierWave::Uploader::Base
 
   # Include RMagick or MiniMagick support:
   # include CarrierWave::RMagick
-  # include CarrierWave::MiniMagick
+  include CarrierWave::MiniMagick
 
   # Choose what kind of storage to use for this uploader:
   storage :file
@@ -32,9 +32,9 @@ class ImageUploader < CarrierWave::Uploader::Base
   # end
 
   # Create different versions of your uploaded files:
-  # version :thumb do
-  #   process :resize_to_fit => [50, 50]
-  # end
+  version :thumb do
+    process :resize_to_fit => [44, 44]
+  end
 
   # Add a white list of extensions which are allowed to be uploaded.
   # For images you might use something like this:
@@ -47,27 +47,5 @@ class ImageUploader < CarrierWave::Uploader::Base
   # def filename
   #   "something.jpg" if original_filename
   # end
-
-  class FilelessIO < StringIO
-    attr_accessor :original_filename
-    attr_accessor :content_type
-  end
-
-  before :cache, :convert_base64
-
-  def convert_base64(file)
-    if file.respond_to?(:original_filename) &&
-        file.original_filename.match(/^base64:/)
-      fname = file.original_filename.gsub(/^base64:/, '')
-      ctype = file.content_type
-      decoded = Base64.decode64(file.read)
-      file.file.tempfile.close!
-      decoded = FilelessIO.new(decoded)
-      decoded.original_filename = fname
-      decoded.content_type = ctype
-      file.__send__ :file=, decoded
-    end
-    file
-  end
 
 end

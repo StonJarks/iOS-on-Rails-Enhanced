@@ -12,12 +12,12 @@ describe "GET /v1/events/:id/photos" do
 				{
 					"name" => photo.name,
 					"id" => photo.id,
-					"image" => {"url" => photo.image.url}
+					"image" => {"url" => photo.image.thumb.url}
 				},
 				{
 					"name" => photo2.name,
 					"id" => photo2.id,
-					"image" => { "url" => photo2.image.url}
+					"image" => { "url" => photo2.image.thumb.url}
 				}
 			]
 		)
