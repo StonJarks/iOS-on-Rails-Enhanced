@@ -1,4 +1,6 @@
 class Api::V1::EventsController < ApiController
+
+  before_filter :require_auth, only: [:create, :update]
 	respond_to :json
 	
 	def show
@@ -45,10 +47,10 @@ private
   end
 
   def user
-    User.find_or_create_by(device_token: device_token)
+    User.find_or_create_by(auth_token: auth_token)
   end
 
-  def device_token
-    params[:owner].try(:[], :device_token)
+  def auth_token
+    params[:owner].try(:[], :auth_token)
   end
 end

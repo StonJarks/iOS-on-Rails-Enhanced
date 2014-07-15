@@ -14,7 +14,7 @@ describe 'GET /v1/events/:id' do
 				'name' => event.name,
 				'started_at' => event.started_at.as_json,
 				'owner' => {
-					'device_token' => event.owner.device_token,
+					'email' => event.owner.email,
 				},
 				'attendancees' => event.users.count
 			}
@@ -23,11 +23,17 @@ describe 'GET /v1/events/:id' do
 end
 
 describe 'POST /v1/events/' do
+	before(:each) do
+		@user = create(:user)
+		post "/v1/auth/login", { email: @user.email, password: "secret"}.to_json, { 'Content-Type' => 'application/json'}
+		@auth_token = @user.auth_token
+		#login_user_post(@user.email, 'secret')
+	end
+
 	it 'saves the address, lat, lon, name and started_at date' do
 		date = Time.zone.now
-		device_token = '1234abcde5678xyz'
 
-		owner = create(:user, device_token: device_token)
+		owner = create(:user)
 
 		post '/v1/events', {
 			address: '123 Example Street',
@@ -37,8 +43,9 @@ describe 'POST /v1/events/' do
 			name: 'Fun Place!',
 			started_at: date,
 			owner: {
-				device_token: device_token
-			}
+				auth_token: owner.auth_token
+			},
+			auth_token: @auth_token
 		}.to_json, { 'Content-Type' => 'application/json'}
 
 		event = Event.last
@@ -54,7 +61,7 @@ describe 'POST /v1/events/' do
 
 	it 'returns an error message when invalid' do
 		post '/v1/events',
-		{}.to_json,
+		{auth_token: @auth_token}.to_json,
 		{'Content-Type' => 'application/json'}
 
 		expect(response_json).to eq({
@@ -71,6 +78,12 @@ describe 'POST /v1/events/' do
 end
 
 describe 'PATCH /v1/events/:id' do
+	before(:each) do
+		@user = create(:user)
+		post "/v1/auth/login", { email: @user.email, password: "secret"}.to_json, { 'Content-Type' => 'application/json'}
+		@auth_token = @user.auth_token
+		#login_user_post(@user.email, 'secret')
+	end
 	it 'updates the event attributes' do
 		event = create(:event)
 		new_name = 'New name'
@@ -83,8 +96,9 @@ describe 'PATCH /v1/events/:id' do
 			name: new_name,
 			started_at: event.started_at,
 			owner: {
-				device_token: event.owner.device_token
-			}
+				email: event.owner.email
+			},
+			auth_token: @auth_token
 		}.to_json, { 'Content-Type' => 'application/json'}
 
 		event.reload
@@ -96,6 +110,7 @@ describe 'PATCH /v1/events/:id' do
 
 		event= create(:event)
 		patch "/v1/events/#{event.id}", {
+			auth_token: @auth_token,
 			address: event.address,
 			lat: event.lat,
 			lon: event.lon,
@@ -103,7 +118,7 @@ describe 'PATCH /v1/events/:id' do
 			started_at: event.started_at,
 			name: nil,
 			owner: {
-				device_token: event.owner.device_token
+				email: event.owner.email
 			}
 		}.to_json, {'Content-Type' => 'application/json'}
 

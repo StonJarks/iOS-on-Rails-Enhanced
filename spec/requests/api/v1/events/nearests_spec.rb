@@ -1,6 +1,13 @@
 require "spec_helper"
 
 describe 'GET /v1/events/nearests?lat=&lon=&radius=' do
+	before(:each) do
+		@user = create(:user)
+		post "/v1/auth/login", { email: @user.email, password: "secret"}.to_json, { 'Content-Type' => 'application/json'}
+		@auth_token = @user.auth_token
+		#login_user_post(@user.email, 'secret')
+	end
+
 	it 'returns the events closest to lat and lon' do
 		near_event = create(:event, lat: 37.760322, lon: -122.429667)
 		farther_event = create(:event, lat: 37.760321, lon: -122.429667)
@@ -21,7 +28,7 @@ describe 'GET /v1/events/nearests?lat=&lon=&radius=' do
 				'lat' => near_event.lat,
 				'lon' => near_event.lon,
 				'name' => near_event.name,
-				'owner' => { 'device_token' => near_event.owner.device_token},
+				'owner' => { 'email' => near_event.owner.email},
 				'started_at' => near_event.started_at.as_json,
 				'attendancees' => near_event.users.count
 				},
@@ -32,7 +39,7 @@ describe 'GET /v1/events/nearests?lat=&lon=&radius=' do
 				'lat' => farther_event.lat,
 				'lon' => farther_event.lon,
 				'name' => farther_event.name,
-				'owner' => { 'device_token' => farther_event.owner.device_token},
+				'owner' => { 'email' => farther_event.owner.email},
 				'started_at' => farther_event.started_at.as_json,
 				'attendancees' => farther_event.users.count
 			}

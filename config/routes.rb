@@ -1,6 +1,7 @@
 Rails.application.routes.draw do
   scope module: :api, defaults: { format: 'json' } do
     namespace :v1 do
+      match 'auth/login' => "auth#authenticate", :via => :post
       namespace :events do
         resources :nearests, only: [:index]
       end
@@ -8,7 +9,7 @@ Rails.application.routes.draw do
       resources :events, only: [:create, :show, :update] do
         resources :photos, only: [:create, :index, :show]
       end
-      resources :users, only: [:create]
+      resources :users#, only: [:create, :delete]
       resources :attendances, only: [:create]
     end
   end

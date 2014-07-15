@@ -45,7 +45,14 @@ RSpec.configure do |config|
 
   #include Macros
   config.include ResponseJSON
-  
+
+  config.include Sorcery::TestHelpers::Rails::LoginUserPost, type: :request
+  config.include Sorcery::TestHelpers::Rails::Controller, type: :controller
+  config.include Sorcery::TestHelpers::Rails::Integration, type: :feature
+    config.include Sorcery::TestHelpers::Rails::Integration, type: :request
+  # config.include AuthRequestHelper, :type => :request
+  # config.include AuthHelper, :type => :controller
+
   #config DatabaseCleaner
   config.before(:suite) do
     DatabaseCleaner.strategy = :truncation
