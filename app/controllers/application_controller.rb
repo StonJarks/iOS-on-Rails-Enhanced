@@ -1,7 +1,11 @@
 class ApplicationController < ActionController::Base
+  
+  include Pundit
   # Prevent CSRF attacks by raising an exception.
   # For APIs, you may want to use :null_session instead.
   protect_from_forgery with: :exception
+
+  rescue_from Pundit::NotAuthorizedError, with: :user_not_authorized
 
    def require_auth
     auth_token = params["auth_token"]
@@ -17,4 +21,16 @@ class ApplicationController < ActionController::Base
       return false
     end
   end
+
+
+  private
+
+    def user_not_authorized
+      render :status => 403, :json => {:error => 'You are not authorized' }
+      return false
+    end
+  # def current_user
+  #   User.find_by_auth_token(params["auth_token"])
+    
+  # end
 end

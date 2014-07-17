@@ -12,62 +12,105 @@ describe "POST v1/users/" do
 		}.to_json, { 'Content-Type' => 'application/json'}
 		}.to change(User, :count).by(1)
 
-		expect(response.code.to_i).to eq 200
+		expect(response.code.to_i).to eq 201
 	end
 end
 
 describe 'PATCH /v1/users/.:id' do
-	before(:each) do
-		@user = create(:user)
-		post "/v1/auth/login", { email: @user.email, password: "secret"}.to_json, { 'Content-Type' => 'application/json'}
-		@auth_token = @user.auth_token
-		#login_user_post(@user.email, 'secret')
+	context "as the user" do
+		before(:each) do
+			@user = create(:user)
+			post "/v1/auth/login", { email: @user.email, password: "secret"}.to_json, { 'Content-Type' => 'application/json'}
+			@auth_token = @user.auth_token
+			#login_user_post(@user.email, 'secret')
+		end
+
+		it "changes the users credentials" do
+			patch "/v1/users/#{@user.id}", {
+				email: "newmail@example.com",
+				password: "newsecret",
+				auth_token: @auth_token
+			}.to_json, { 'Content-Type' => 'application/json'}
+
+			@user.reload
+			expect(@user.email).to eq "newmail@example.com"
+			expect(response.code.to_i).to eq 200
+			expect(response_json).to eq({"id" => @user.id})
+		end
+
+		it "returns an error message when invalid" do
+			patch "/v1/users/#{@user.id}", {
+				password: "secret",
+				auth_token: @auth_token
+			}.to_json, { 'Content-Type' => 'application/json'}
+
+			@user.reload
+
+			expect(@user.email).not_to be nil
+			expect(response_json).to eq({
+				'message' => 'Validation Failed',
+				'errors' => [ "Email can't be blank"]
+				})
+
+			expect(response.code.to_i).to eq 422
+		end
 	end
 
-	it "changes the users credentials" do
-		patch "/v1/users/#{@user.id}", {
-			email: "newmail@example.com",
-			password: "newsecret",
-			auth_token: @auth_token
-		}.to_json, { 'Content-Type' => 'application/json'}
+	context "as another user" do
+		before(:each) do
+			@user = create(:user)
+			@bad_user = create(:user)
+			post "/v1/auth/login", { email: @bad_user.email, password: "secret"}.to_json, { 'Content-Type' => 'application/json'}
+			@auth_token = @bad_user.auth_token
+		end
 
-		@user.reload
-		expect(@user.email).to eq "newmail@example.com"
-		expect(response_json).to eq({"id" => @user.id})
-	end
+		it "doesn't delete another users account" do
+			patch "/v1/users/#{@user.id}", {
+				email: "newmail@example.com",
+				password: "newsecret",
+				auth_token: @auth_token
+			}.to_json, { 'Content-Type' => 'application/json'}
 
-	it "returns an error message when invalid" do
-		patch "/v1/users/#{@user.id}", {
-			password: "secret",
-			auth_token: @auth_token
-		}.to_json, { 'Content-Type' => 'application/json'}
-
-		@user.reload
-
-		expect(@user.email).not_to be nil
-		expect(response_json).to eq({
-			'message' => 'Validation Failed',
-			'errors' => [ "Email can't be blank"]
-			})
-
-		expect(response.code.to_i).to eq 422
+			@user.reload
+			expect(@user.email).to_not eq "newmail@example.com"
+			expect(response.code.to_i).to eq 403
+		end
 	end
 end
 
 describe "DELETE /v1/users/:id" do
-	before(:each) do
-		@user = create(:user)
-		post "/v1/auth/login", { email: @user.email, password: "secret"}.to_json, { 'Content-Type' => 'application/json'}
-		@auth_token = @user.auth_token
-		#login_user_post(@user.email, 'secret')
-	end
-	
-	it "deletes the users account" do
-		expect{
-			delete "/v1/users/#{@user.id}", { auth_token: @auth_token }.to_json, { 'Content-Type' => 'application/json'}
-			}.to change(User, :count).by(-1)
+	context "as the user" do
+		before(:each) do
+			@user = create(:user)
+			post "/v1/auth/login", { email: @user.email, password: "secret"}.to_json, { 'Content-Type' => 'application/json'}
+			@auth_token = @user.auth_token
+			#login_user_post(@user.email, 'secret')
+		end
 		
-		expect(response.code.to_i).to eq 200
+		it "deletes the users account" do
+			expect{
+				delete "/v1/users/#{@user.id}", { auth_token: @auth_token }.to_json, { 'Content-Type' => 'application/json'}
+				}.to change(User, :count).by(-1)
+			
+			expect(response.code.to_i).to eq 200
+		end
+	end
+
+	context "as another user" do
+		before(:each) do
+			@user = create(:user)
+			@bad_user = create(:user)
+			post "/v1/auth/login", { email: @bad_user.email, password: "secret"}.to_json, { 'Content-Type' => 'application/json'}
+			@auth_token = @bad_user.auth_token
+		end
+
+		it "doesn't delete another users account" do
+			expect{
+				delete "/v1/users/#{@user.id}", { auth_token: @auth_token }.to_json, { 'Content-Type' => 'application/json'}
+				}.to_not change(User, :count).by(-1)
+			
+			expect(response.code.to_i).to eq 403
+		end
 	end
 end
 
@@ -78,7 +121,7 @@ describe "POST /v1/auth/login" do
 	@user = create(:user)
 	post "/v1/auth/login", { email: @user.email, password: "secret"}.to_json, { 'Content-Type' => 'application/json'}
 	
-	expect(response.code.to_i).to eq 200
+	expect(response.code.to_i).to eq 201
 	expect(response_json).to eq({
 		'email' => @user.email,
 		'auth_token' => @user.auth_token,

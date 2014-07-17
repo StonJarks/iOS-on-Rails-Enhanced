@@ -10,7 +10,7 @@ class Api::V1::UsersController < ApiController
 		@user = User.new(user_params)
 		
 		if @user.save
-			render :status => 200, :json => {
+			render :status => 201, :json => {
 				:email => @user.email
 			}
 		else
@@ -24,8 +24,12 @@ class Api::V1::UsersController < ApiController
 
 	def update
 		@user = User.find(params[:id])
+		authorize @user
+
 		if @user.update_attributes(user_params)
-			render
+  			render :status => 200, json: {
+          		:id => @user.id
+        	}
 		else
 			render json: {
     			message: 'Validation Failed',
@@ -36,6 +40,7 @@ class Api::V1::UsersController < ApiController
 
 	def destroy
 		@user = User.find(params[:id])
+		authorize @user
 		
 		if @user.destroy
 			render :status => 200

@@ -11,7 +11,9 @@ class Api::V1::EventsController < ApiController
     	@event = Event.new(event_params)
 
     	if @event.save
-      		render
+      		render :status => 201, json: {
+            :id => @event.id
+          }
     	else
       		render json: {
         		message: 'Validation Failed',
@@ -22,9 +24,13 @@ class Api::V1::EventsController < ApiController
 
   	def update
   		@event = Event.find(params[:id])
-  		if @event.update_attributes(event_params)
-  			render
-		else
+      authorize @event
+  		
+      if @event.update_attributes(event_params)
+  			render :status => 200, json: {
+          :id => @event.id
+        }
+		  else
   			render json: {
     			message: 'Validation Failed',
     			errors: @event.errors.full_messages

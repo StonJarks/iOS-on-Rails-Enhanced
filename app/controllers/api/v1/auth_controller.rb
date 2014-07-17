@@ -13,7 +13,7 @@ class Api::V1::AuthController < ApiController
       
       @user.regenerate_auth_token!(ttl.seconds.from_now) if @user.auth_token_expired?
       
-      render :status => 200, :json => {
+      render :status => 201, :json => {
         :email => @user.email,
         :auth_token => @user.auth_token,
         :auth_token_expires_at => @user.auth_token_expires_at.to_json
