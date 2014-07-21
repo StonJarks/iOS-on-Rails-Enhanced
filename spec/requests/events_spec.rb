@@ -3,7 +3,7 @@ require 'spec_helper'
 describe 'GET /events/:id' do
 	it 'returns an event by :id' do
 		event = create(:event)
-		get "/events/#{event.id}",{}, set_headers
+		get "/events/#{event.id}",{}, set_headers(nil)
 		expect(response_json).to eq(
 			{
 				'address' => event.address,
@@ -26,7 +26,7 @@ describe 'POST /events/' do
 	context "as a signed in user" do
 		before(:each) do
 			@user = create(:user)
-			post "/auth/login", { email: @user.email, password: "secret"}.to_json, set_headers
+			post "/auth/login", { email: @user.email, password: "secret"}.to_json, set_headers(nil)
 			@auth_token = @user.auth_token
 		end
 
@@ -43,9 +43,8 @@ describe 'POST /events/' do
 				started_at: date,
 				owner: {
 					auth_token: owner.auth_token
-				},
-				auth_token: @auth_token
-			}.to_json, set_headers
+				}
+			}.to_json, set_headers(@auth_token)
 			event = Event.last
 
 			expect(response.code.to_i).to eq 201
@@ -61,9 +60,7 @@ describe 'POST /events/' do
 
 		it 'returns an error message when invalid' do
 
-			post '/events', {
-				auth_token: @auth_token
-				}.to_json, set_headers
+			post '/events', {}.to_json, set_headers(@auth_token)
 			
 			expect(response_json).to eq({
 				'message' => 'Validation Failed',
@@ -92,9 +89,8 @@ describe 'POST /events/' do
 					started_at: date,
 					owner: {
 						auth_token: nil
-					},
-					auth_token: nil
-				}.to_json, set_headers
+					}
+				}.to_json, set_headers(nil)
 			expect(response.code.to_i).to eq 401
 		end
 	end
@@ -104,7 +100,7 @@ describe 'PATCH /events/:id' do
 	before(:each) do
 		@user = create(:user)
 
-		post "/auth/login", { email: @user.email, password: "secret"}.to_json, set_headers
+		post "/auth/login", { email: @user.email, password: "secret"}.to_json, set_headers(nil)
 		@auth_token = @user.auth_token
 	end
 	context "as the events owner" do
@@ -121,9 +117,8 @@ describe 'PATCH /events/:id' do
 				started_at: event.started_at,
 				owner: {
 					email: event.owner.email
-				},
-				auth_token: @auth_token
-			}.to_json, set_headers
+				}
+			}.to_json, set_headers(@auth_token)
 			event.reload
 
 			expect(response.code.to_i).to eq 200
@@ -135,7 +130,6 @@ describe 'PATCH /events/:id' do
 			event= create(:event, owner: @user)
 
 			patch "/events/#{event.id}", {
-				auth_token: @auth_token,
 				address: event.address,
 				lat: event.lat,
 				lon: event.lon,
@@ -145,7 +139,7 @@ describe 'PATCH /events/:id' do
 				owner: {
 					email: event.owner.email
 				}
-			}.to_json, set_headers
+			}.to_json, set_headers(@auth_token)
 			event.reload
 
 			expect(event.name).to_not be nil
@@ -172,9 +166,8 @@ describe 'PATCH /events/:id' do
 				started_at: event.started_at,
 				owner: {
 					email: event.owner.email
-				},
-				auth_token: @auth_token
-			}.to_json, set_headers
+				}
+			}.to_json, set_headers(@auth_token)
 	
 			expect(response.code.to_i).to eq 403
 			expect(response_json).to eq({

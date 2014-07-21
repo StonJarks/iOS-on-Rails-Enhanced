@@ -9,7 +9,7 @@ describe "POST /users/" do
 			post "/users", {
 			email: "user@example,com",
 			password: "foobar"
-		}.to_json, set_headers		
+		}.to_json, set_headers(nil)		
 		}.to change(User, :count).by(1)
 
 		expect(response.code.to_i).to eq 201
@@ -21,7 +21,7 @@ describe 'PATCH /users/.:id' do
 		before(:each) do
 			@user = create(:user)
 	
-			post "/auth/login", { email: @user.email, password: "secret"}.to_json, set_headers
+			post "/auth/login", { email: @user.email, password: "secret"}.to_json, set_headers(nil)
 			@auth_token = @user.auth_token
 		end
 
@@ -29,9 +29,8 @@ describe 'PATCH /users/.:id' do
 
 			patch "/users/#{@user.id}", {
 				email: "newmail@example.com",
-				password: "newsecret",
-				auth_token: @auth_token
-			}.to_json, set_headers
+				password: "newsecret"
+			}.to_json, set_headers(@auth_token)
 
 			@user.reload
 			expect(@user.email).to eq "newmail@example.com"
@@ -42,9 +41,8 @@ describe 'PATCH /users/.:id' do
 		it "returns an error message when invalid" do
 
 			patch "/users/#{@user.id}", {
-				password: "secret",
-				auth_token: @auth_token
-			}.to_json, set_headers
+				password: "secret"
+			}.to_json, set_headers(@auth_token)
 			@user.reload
 
 			expect(@user.email).not_to be nil
@@ -62,16 +60,15 @@ describe 'PATCH /users/.:id' do
 			@user = create(:user)
 			@bad_user = create(:user)
 			
-			post "/auth/login", { email: @bad_user.email, password: "secret"}.to_json, set_headers
+			post "/auth/login", { email: @bad_user.email, password: "secret"}.to_json, set_headers(nil)
 			@auth_token = @bad_user.auth_token
 		end
 
 		it "doesn't delete another users account" do
 			patch "/users/#{@user.id}", {
 				email: "newmail@example.com",
-				password: "newsecret",
-				auth_token: @auth_token
-			}.to_json, set_headers
+				password: "newsecret"
+			}.to_json, set_headers(@auth_token)
 			@user.reload
 			expect(@user.email).to_not eq "newmail@example.com"
 			expect(response.code.to_i).to eq 403
@@ -84,13 +81,13 @@ describe "DELETE /users/:id" do
 		before(:each) do
 			@user = create(:user)
 		
-			post "/auth/login", { email: @user.email, password: "secret"}.to_json, set_headers
+			post "/auth/login", { email: @user.email, password: "secret"}.to_json, set_headers(nil)
 			@auth_token = @user.auth_token
 		end
 		
 		it "deletes the users account" do
 			expect{
-				delete "/users/#{@user.id}", { auth_token: @auth_token }.to_json, set_headers
+				delete "/users/#{@user.id}", {}.to_json, set_headers(@auth_token)
 				}.to change(User, :count).by(-1)
 			
 			expect(response.code.to_i).to eq 200
@@ -102,13 +99,13 @@ describe "DELETE /users/:id" do
 			@user = create(:user)
 			@bad_user = create(:user)
 			
-			post "/auth/login", { email: @bad_user.email, password: "secret"}.to_json, set_headers
+			post "/auth/login", { email: @bad_user.email, password: "secret"}.to_json, set_headers(nil)
 			@auth_token = @bad_user.auth_token
 		end
 
 		it "doesn't delete another users account" do
 			expect{
-				delete "/users/#{@user.id}", { auth_token: @auth_token }.to_json, set_headers
+				delete "/users/#{@user.id}", {}.to_json, set_headers(@auth_token)
 				}.to_not change(User, :count).by(-1)
 			
 			expect(response.code.to_i).to eq 403
@@ -122,7 +119,7 @@ describe "POST /auth/login" do
 	it "logs in the user" do
 	@user = create(:user)
 
-	post "/auth/login", { email: @user.email, password: "secret"}.to_json, set_headers
+	post "/auth/login", { email: @user.email, password: "secret"}.to_json, set_headers(nil)
 	
 	expect(response.code.to_i).to eq 201
 	expect(response_json).to eq({

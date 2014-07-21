@@ -8,8 +8,7 @@ class ApplicationController < ActionController::Base
   rescue_from Pundit::NotAuthorizedError, with: :user_not_authorized
 
    def require_auth
-    auth_token = params["auth_token"]
-    #auth_token = request.headers["auth_token"]
+    auth_token = request.headers["auth_token"]
     @user = User.find_by_auth_token(auth_token)
     if @user
       if @user.auth_token_expired?

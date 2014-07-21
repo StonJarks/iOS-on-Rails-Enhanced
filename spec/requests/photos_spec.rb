@@ -6,7 +6,7 @@ describe "GET /events/:id/photos" do
 		photo = create(:photo, event: event)
 		photo2 = create(:photo, event: event)
 
-		get "/events/#{event.id}/photos", {}, set_headers
+		get "/events/#{event.id}/photos", {}, set_headers(nil)
 		expect(response_json).to eq(
 			[
 				{
@@ -29,7 +29,7 @@ describe "GET /events/:id/photos/:id" do
 		event = create(:event)
 		photo = create(:photo, event: event)
 
-		get "events/#{event.id}/photos/#{photo.id}", {}, set_headers
+		get "events/#{event.id}/photos/#{photo.id}", {}, set_headers(nil)
 		expect(response_json).to eq(
 			{
 				"name" => photo.name,
@@ -49,7 +49,7 @@ describe "POST /events/:id/photo" do
 						name: "photo name",
 						event: { event: event },
 						image: test_photo 
-				}.to_json, set_headers
+				}.to_json, set_headers(nil)
 
 				}.to change(Photo, :count).by(1)
 		 event = Event.last
@@ -62,7 +62,7 @@ describe "POST /events/:id/photo" do
  		event = create(:event)
 
  		expect{ post "/events/#{event.id}/photos",
-				{}.to_json,	set_headers
+				{}.to_json,	set_headers(nil)
 			}.to_not change(Photo, :count)
 
 		expect(response_json).to eq({

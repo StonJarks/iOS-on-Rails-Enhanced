@@ -3,7 +3,7 @@ require "spec_helper"
 describe 'GET /events/nearests?lat=&lon=&radius=' do
 	before(:each) do
 		@user = create(:user)
-		post "/auth/login", { email: @user.email, password: "secret"}.to_json, set_headers
+		post "/auth/login", { email: @user.email, password: "secret"}.to_json, set_headers(nil)
 		@auth_token = @user.auth_token
 	end
 
@@ -17,7 +17,7 @@ describe 'GET /events/nearests?lat=&lon=&radius=' do
 		lon = -122.430782
 		radius = 5
 
-		get "/events/nearests?lat=#{lat}&lon=#{lon}&radius=#{radius}", {}, set_headers
+		get "/events/nearests?lat=#{lat}&lon=#{lon}&radius=#{radius}", {}, set_headers(@auth_token)
 
 		expect(response_json).to eq([
 			{
@@ -50,7 +50,7 @@ describe 'GET /events/nearests?lat=&lon=&radius=' do
 		lon = -122.430782
 		radius = 1
 
-		get "/events/nearests?lat=#{lat}&lon=#{lon}&radius=#{radius}", {}, set_headers
+		get "/events/nearests?lat=#{lat}&lon=#{lon}&radius=#{radius}", {}, set_headers(@auth_token)
 
 		expect(response_json).to eq({'message' => 'No Events Found'})
 		expect(response.code.to_i).to eq 200
