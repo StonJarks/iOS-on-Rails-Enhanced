@@ -1,11 +1,10 @@
 require "spec_helper"
 
-describe 'GET /v1/events/nearests?lat=&lon=&radius=' do
+describe 'GET /events/nearests?lat=&lon=&radius=' do
 	before(:each) do
 		@user = create(:user)
-		post "/v1/auth/login", { email: @user.email, password: "secret"}.to_json, { 'Content-Type' => 'application/json'}
+		post "/auth/login", { email: @user.email, password: "secret"}.to_json, set_headers
 		@auth_token = @user.auth_token
-		#login_user_post(@user.email, 'secret')
 	end
 
 	it 'returns the events closest to lat and lon' do
@@ -18,7 +17,7 @@ describe 'GET /v1/events/nearests?lat=&lon=&radius=' do
 		lon = -122.430782
 		radius = 5
 
-		get "/v1/events/nearests?lat=#{lat}&lon=#{lon}&radius=#{radius}"
+		get "/events/nearests?lat=#{lat}&lon=#{lon}&radius=#{radius}", {}, set_headers
 
 		expect(response_json).to eq([
 			{
@@ -51,7 +50,7 @@ describe 'GET /v1/events/nearests?lat=&lon=&radius=' do
 		lon = -122.430782
 		radius = 1
 
-		get "/v1/events/nearests?lat=#{lat}&lon=#{lon}&radius=#{radius}"
+		get "/events/nearests?lat=#{lat}&lon=#{lon}&radius=#{radius}", {}, set_headers
 
 		expect(response_json).to eq({'message' => 'No Events Found'})
 		expect(response.code.to_i).to eq 200

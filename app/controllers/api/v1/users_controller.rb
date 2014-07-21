@@ -1,6 +1,7 @@
 class Api::V1::UsersController < ApiController
 	
 	before_filter :require_auth, only: [:update, :destroy]
+	respond_to :json
 	
 	def new
 		@user = User.new

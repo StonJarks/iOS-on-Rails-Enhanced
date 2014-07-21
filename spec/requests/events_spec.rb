@@ -1,9 +1,9 @@
 require 'spec_helper'
 
-describe 'GET /v1/events/:id' do
+describe 'GET /events/:id' do
 	it 'returns an event by :id' do
 		event = create(:event)
-		get "/v1/events/#{event.id}"
+		get "/events/#{event.id}",{}, set_headers
 		expect(response_json).to eq(
 			{
 				'address' => event.address,
@@ -22,21 +22,19 @@ describe 'GET /v1/events/:id' do
 	end
 end
 
-describe 'POST /v1/events/' do
+describe 'POST /events/' do
 	context "as a signed in user" do
 		before(:each) do
 			@user = create(:user)
-			post "/v1/auth/login", { email: @user.email, password: "secret"}.to_json, { 'Content-Type' => 'application/json'}
+			post "/auth/login", { email: @user.email, password: "secret"}.to_json, set_headers
 			@auth_token = @user.auth_token
-			#login_user_post(@user.email, 'secret')
 		end
 
 		it 'saves the address, lat, lon, name and started_at date' do
 			date = Time.zone.now
-
 			owner = create(:user)
 
-			post '/v1/events', {
+			post '/events', {
 				address: '123 Example Street',
 				ended_at: date,
 				lat: 1.0,
@@ -47,8 +45,7 @@ describe 'POST /v1/events/' do
 					auth_token: owner.auth_token
 				},
 				auth_token: @auth_token
-			}.to_json, { 'Content-Type' => 'application/json'}
-
+			}.to_json, set_headers
 			event = Event.last
 
 			expect(response.code.to_i).to eq 201
@@ -63,10 +60,11 @@ describe 'POST /v1/events/' do
 		end
 
 		it 'returns an error message when invalid' do
-			post '/v1/events',
-			{auth_token: @auth_token}.to_json,
-			{'Content-Type' => 'application/json'}
 
+			post '/events', {
+				auth_token: @auth_token
+				}.to_json, set_headers
+			
 			expect(response_json).to eq({
 				'message' => 'Validation Failed',
 				'errors' => [
@@ -84,8 +82,8 @@ describe 'POST /v1/events/' do
 		it "returns a not authorized message" do
 
 			date = Time.zone.now	
-			
-			post '/v1/events', {
+
+			post '/events', {
 					address: '123 Example Street',
 					ended_at: date,
 					lat: 1.0,
@@ -96,26 +94,25 @@ describe 'POST /v1/events/' do
 						auth_token: nil
 					},
 					auth_token: nil
-				}.to_json, { 'Content-Type' => 'application/json'}	
-
+				}.to_json, set_headers
 			expect(response.code.to_i).to eq 401
 		end
 	end
 end
 
-describe 'PATCH /v1/events/:id' do
+describe 'PATCH /events/:id' do
 	before(:each) do
 		@user = create(:user)
-		post "/v1/auth/login", { email: @user.email, password: "secret"}.to_json, { 'Content-Type' => 'application/json'}
+
+		post "/auth/login", { email: @user.email, password: "secret"}.to_json, set_headers
 		@auth_token = @user.auth_token
-		#login_user_post(@user.email, 'secret')
 	end
 	context "as the events owner" do
 		it 'updates the event attributes' do
 			event = create(:event, owner: @user)
 			new_name = 'New name'
 
-			patch "/v1/events/#{event.id}", {
+			patch "/events/#{event.id}", {
 				address: event.address,
 				ended_at: event.ended_at,
 				lat: event.lat,
@@ -126,8 +123,7 @@ describe 'PATCH /v1/events/:id' do
 					email: event.owner.email
 				},
 				auth_token: @auth_token
-			}.to_json, { 'Content-Type' => 'application/json'}
-
+			}.to_json, set_headers
 			event.reload
 
 			expect(response.code.to_i).to eq 200
@@ -137,7 +133,8 @@ describe 'PATCH /v1/events/:id' do
 		it 'returns an error message when invalid' do
 
 			event= create(:event, owner: @user)
-			patch "/v1/events/#{event.id}", {
+
+			patch "/events/#{event.id}", {
 				auth_token: @auth_token,
 				address: event.address,
 				lat: event.lat,
@@ -148,8 +145,7 @@ describe 'PATCH /v1/events/:id' do
 				owner: {
 					email: event.owner.email
 				}
-			}.to_json, {'Content-Type' => 'application/json'}
-
+			}.to_json, set_headers
 			event.reload
 
 			expect(event.name).to_not be nil
@@ -166,8 +162,8 @@ describe 'PATCH /v1/events/:id' do
 		it "doesn't update the events attributes" do
 			event = create(:event)
 			new_name = 'New name'
-			#expect {
-			patch "/v1/events/#{event.id}", {
+
+			patch "/events/#{event.id}", {
 				address: event.address,
 				ended_at: event.ended_at,
 				lat: event.lat,
@@ -178,8 +174,8 @@ describe 'PATCH /v1/events/:id' do
 					email: event.owner.email
 				},
 				auth_token: @auth_token
-			}.to_json, { 'Content-Type' => 'application/json'}
-			#}.to raise_error(Pundit::NotAuthorizedError)		
+			}.to_json, set_headers
+	
 			expect(response.code.to_i).to eq 403
 			expect(response_json).to eq({
 				'error' => 'You are not authorized'

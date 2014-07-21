@@ -45,6 +45,7 @@ RSpec.configure do |config|
 
   #include Macros
   config.include ResponseJSON
+  config.include RequestHeaders
 
   config.include Sorcery::TestHelpers::Rails::LoginUserPost, type: :request
   config.include Sorcery::TestHelpers::Rails::Controller, type: :controller

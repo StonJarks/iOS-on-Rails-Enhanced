@@ -1,6 +1,6 @@
 Rails.application.routes.draw do
   scope module: :api, defaults: { format: 'json' } do
-    namespace :v1 do
+    scope module: :v1, constraints: ApiConstraint.new(version: 1) do
       match 'auth/login' => "auth#authenticate", :via => :post
       namespace :events do
         resources :nearests, only: [:index]

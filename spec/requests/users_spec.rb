@@ -2,35 +2,36 @@ require "spec_helper"
 
 # User account specs
 
-describe "POST v1/users/" do
+describe "POST /users/" do
 	it "creates a new user" do
 		
 		expect{
-			post "/v1/users", {
+			post "/users", {
 			email: "user@example,com",
 			password: "foobar"
-		}.to_json, { 'Content-Type' => 'application/json'}
+		}.to_json, set_headers		
 		}.to change(User, :count).by(1)
 
 		expect(response.code.to_i).to eq 201
 	end
 end
 
-describe 'PATCH /v1/users/.:id' do
+describe 'PATCH /users/.:id' do
 	context "as the user" do
 		before(:each) do
 			@user = create(:user)
-			post "/v1/auth/login", { email: @user.email, password: "secret"}.to_json, { 'Content-Type' => 'application/json'}
+	
+			post "/auth/login", { email: @user.email, password: "secret"}.to_json, set_headers
 			@auth_token = @user.auth_token
-			#login_user_post(@user.email, 'secret')
 		end
 
 		it "changes the users credentials" do
-			patch "/v1/users/#{@user.id}", {
+
+			patch "/users/#{@user.id}", {
 				email: "newmail@example.com",
 				password: "newsecret",
 				auth_token: @auth_token
-			}.to_json, { 'Content-Type' => 'application/json'}
+			}.to_json, set_headers
 
 			@user.reload
 			expect(@user.email).to eq "newmail@example.com"
@@ -39,11 +40,11 @@ describe 'PATCH /v1/users/.:id' do
 		end
 
 		it "returns an error message when invalid" do
-			patch "/v1/users/#{@user.id}", {
+
+			patch "/users/#{@user.id}", {
 				password: "secret",
 				auth_token: @auth_token
-			}.to_json, { 'Content-Type' => 'application/json'}
-
+			}.to_json, set_headers
 			@user.reload
 
 			expect(@user.email).not_to be nil
@@ -60,17 +61,17 @@ describe 'PATCH /v1/users/.:id' do
 		before(:each) do
 			@user = create(:user)
 			@bad_user = create(:user)
-			post "/v1/auth/login", { email: @bad_user.email, password: "secret"}.to_json, { 'Content-Type' => 'application/json'}
+			
+			post "/auth/login", { email: @bad_user.email, password: "secret"}.to_json, set_headers
 			@auth_token = @bad_user.auth_token
 		end
 
 		it "doesn't delete another users account" do
-			patch "/v1/users/#{@user.id}", {
+			patch "/users/#{@user.id}", {
 				email: "newmail@example.com",
 				password: "newsecret",
 				auth_token: @auth_token
-			}.to_json, { 'Content-Type' => 'application/json'}
-
+			}.to_json, set_headers
 			@user.reload
 			expect(@user.email).to_not eq "newmail@example.com"
 			expect(response.code.to_i).to eq 403
@@ -78,18 +79,18 @@ describe 'PATCH /v1/users/.:id' do
 	end
 end
 
-describe "DELETE /v1/users/:id" do
+describe "DELETE /users/:id" do
 	context "as the user" do
 		before(:each) do
 			@user = create(:user)
-			post "/v1/auth/login", { email: @user.email, password: "secret"}.to_json, { 'Content-Type' => 'application/json'}
+		
+			post "/auth/login", { email: @user.email, password: "secret"}.to_json, set_headers
 			@auth_token = @user.auth_token
-			#login_user_post(@user.email, 'secret')
 		end
 		
 		it "deletes the users account" do
 			expect{
-				delete "/v1/users/#{@user.id}", { auth_token: @auth_token }.to_json, { 'Content-Type' => 'application/json'}
+				delete "/users/#{@user.id}", { auth_token: @auth_token }.to_json, set_headers
 				}.to change(User, :count).by(-1)
 			
 			expect(response.code.to_i).to eq 200
@@ -100,13 +101,14 @@ describe "DELETE /v1/users/:id" do
 		before(:each) do
 			@user = create(:user)
 			@bad_user = create(:user)
-			post "/v1/auth/login", { email: @bad_user.email, password: "secret"}.to_json, { 'Content-Type' => 'application/json'}
+			
+			post "/auth/login", { email: @bad_user.email, password: "secret"}.to_json, set_headers
 			@auth_token = @bad_user.auth_token
 		end
 
 		it "doesn't delete another users account" do
 			expect{
-				delete "/v1/users/#{@user.id}", { auth_token: @auth_token }.to_json, { 'Content-Type' => 'application/json'}
+				delete "/users/#{@user.id}", { auth_token: @auth_token }.to_json, set_headers
 				}.to_not change(User, :count).by(-1)
 			
 			expect(response.code.to_i).to eq 403
@@ -116,10 +118,11 @@ end
 
 # User log in specs
 
-describe "POST /v1/auth/login" do
+describe "POST /auth/login" do
 	it "logs in the user" do
 	@user = create(:user)
-	post "/v1/auth/login", { email: @user.email, password: "secret"}.to_json, { 'Content-Type' => 'application/json'}
+
+	post "/auth/login", { email: @user.email, password: "secret"}.to_json, set_headers
 	
 	expect(response.code.to_i).to eq 201
 	expect(response_json).to eq({
