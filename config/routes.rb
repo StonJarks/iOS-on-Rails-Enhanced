@@ -1,4 +1,5 @@
 Rails.application.routes.draw do
+  apipie
   scope module: :api, defaults: { format: 'json' } do
     scope module: :v1, constraints: ApiConstraint.new(version: 1) do
       match 'auth/login' => "auth#authenticate", :via => :post

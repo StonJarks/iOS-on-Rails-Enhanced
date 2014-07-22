@@ -7,6 +7,12 @@ class Api::V1::UsersController < ApiController
 		@user = User.new
 	end
 
+	api :POST, "/users", "creates a new user"
+	param :user, Hash do
+		param :email, String
+		param :password, String
+	end
+	example "{ {'email': 'user@example.com', 'password': 'foobar' }"
 	def create
 		@user = User.new(user_params)
 		
@@ -22,7 +28,14 @@ class Api::V1::UsersController < ApiController
 		end
 	end
 
-
+	api :PATCH, "/users/:id", "updates the users credentials"
+	error :code => 422, :desc => "Validation Failed"
+	error :code => 403, :desc => "You are not authorized"	
+	param :user, Hash do
+		param :email, String
+		param :password, String	
+	end
+	example "{'email': 'user@example.com', 'password': 'foobar' }"
 	def update
 		@user = User.find(params[:id])
 		authorize @user
@@ -39,6 +52,10 @@ class Api::V1::UsersController < ApiController
   		end
 	end
 
+	api :DELETE, "/users/:id", "deletes a users's account"
+	param :id, :number
+	error :code => 422, :desc => "Could not delete account"
+	error :code => 403, :desc => "You are not authorized"
 	def destroy
 		@user = User.find(params[:id])
 		authorize @user

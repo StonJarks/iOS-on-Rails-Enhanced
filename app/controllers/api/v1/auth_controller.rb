@@ -5,6 +5,13 @@ class Api::V1::AuthController < ApiController
 
   before_filter :validate_params, :only => :authenticate
 
+  api :POST, "/auth/login", "logs in a user"
+  error :code => 422, :desc => "Invalid credentials"
+  param :user, Hash do
+    param :email, String, required: true
+    param :password, String, required: true
+  end
+  example "{'email': 'user@example.com', 'password': 'foobar'} "
   def authenticate
     @user = login(params[:email], params[:password])
     if @user
